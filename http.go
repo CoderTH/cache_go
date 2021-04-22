@@ -31,6 +31,7 @@ func (p *HTTPPool) Log(format string, v ...interface{}) {
 
 // ServeHTTP handle all http requests
 func (p *HTTPPool) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	//验证url前缀是否与defaultBasePath相等
 	if !strings.HasPrefix(r.URL.Path, p.basePath) {
 		panic("HTTPPool serving unexpected path: " + r.URL.Path)
 	}
@@ -41,16 +42,16 @@ func (p *HTTPPool) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
-
+	//从url中获取到groupName与key
 	groupName := parts[0]
 	key := parts[1]
-
+	//从groups中获取到当前group
 	group := GetGroup(groupName)
 	if group == nil {
 		http.Error(w, "no such group: "+groupName, http.StatusNotFound)
 		return
 	}
-
+	//获取缓存中的数据
 	view, err := group.Get(key)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
